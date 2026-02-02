@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Un mensaje para Jessica</title>
+    <style>
+        body { margin: 0; background: #020205; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        canvas { display: block; position: fixed; top: 0; left: 0; z-index: -1; }
+        
+        #content {
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            flex-direction: column; transition: all 1.5s ease;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            padding: 50px; border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        h1 { font-weight: 200; letter-spacing: 8px; color: #ff85a1; text-shadow: 0 0 10px #ff85a1; }
+        p { font-weight: 300; opacity: 0.8; margin-bottom: 30px; }
+
+        .btn {
+            background: transparent; border: 1px solid #ff85a1;
+            color: #ff85a1; padding: 12px 35px; border-radius: 50px;
+            cursor: pointer; font-size: 16px; transition: 0.4s; text-decoration: none;
+        }
+        .btn:hover { background: #ff85a1; color: white; box-shadow: 0 0 25px #ff85a1; transform: scale(1.05); }
+
+        #final-message {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); width: 80%; max-width: 500px;
+            text-align: center; line-height: 1.6; font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div id="content">
+    <div class="glass-card">
+        <h1>JESSICA</h1>
+        <p>Toca las estrellas o haz clic abajo</p>
+        <button class="btn" onclick="mostrarCarta()">Descubrir algo</button>
+    </div>
+</div>
+
+<div id="final-message">
+    <h2 style="color: #ff85a1; font-family: cursive;">Hola, Jessica...</h2>
+    <p>Dicen que en ingeniería todo tiene una explicación, pero lo que siento cuando te veo no tiene fórmula matemática.</p>
+    <p>Eres la persona más increíble que he conocido últimamente. ✨</p>
+    <br>
+    <button class="btn" onclick="location.reload()">Ver de nuevo</button>
+</div>
+
+<script>
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particles = [];
+    const mouse = { x: null, y: null, radius: 150 };
+
+    window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+
+    class Star {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 0.5;
+            this.baseX = this.x;
+            this.baseY = this.y;
+            this.density = (Math.random() * 30) + 5;
+            this.color = Math.random() > 0.5 ? '#ffffff' : '#ff85a1';
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        update() {
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            let distance = Math.sqrt(dx*dx + dy*dy);
+            if (distance < mouse.radius) {
+                let forceDirectionX = dx / distance;
+                let forceDirectionY = dy / distance;
+                let force = (mouse.radius - distance) / mouse.radius;
+                this.x -= forceDirectionX * force * this.density;
+                this.y -= forceDirectionY * force * this.density;
+            } else {
+                if (this.x !== this.baseX) this.x -= (this.x - this.baseX) / 10;
+                if (this.y !== this.baseY) this.y -= (this.y - this.baseY) / 10;
+            }
+        }
+    }
+
+    function init() {
+        particles = [];
+        for (let i = 0; i < 800; i++) particles.push(new Star());
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    function mostrarCarta() {
+        document.getElementById('content').style.opacity = '0';
+        document.getElementById('content').style.transform = 'translateY(-100px)';
+        setTimeout(() => {
+            document.getElementById('content').style.display = 'none';
+            const final = document.getElementById('final-message');
+            final.style.display = 'block';
+            final.style.opacity = '0';
+            setTimeout(() => final.style.opacity = '1', 100);
+        }, 1000);
+    }
+
+    init();
+    animate();
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        init();
+    });
+</script>
+</body>
+</html>
